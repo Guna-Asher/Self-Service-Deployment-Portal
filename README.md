@@ -65,7 +65,8 @@ docker rm myapp
 docker run -d --name myapp -p 80:80 myapp:v2
 ```
 
-This process is **error‑prone**, requires **direct server access**, offers **no deployment history**, and makes **rollback** nearly impossible without manual intervention.
+This process is **error-prone**, requires **direct server access**, offers **no deployment history**, and makes **rollback** nearly impossible without manual intervention.
+
 
 ---
 
