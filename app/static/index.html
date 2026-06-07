@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deployment Portal Dashboard</title>
+
+  <!-- Bootstrap 5 + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+  <style>
+    body { padding-top: 60px; background: #f8f9fa; }
+    .login-container { max-width: 420px; margin: 100px auto; }
+    .hidden { display: none !important; }
+    .app-card { cursor: pointer; }
+    .deployment-status { font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#" id="brandLink"><i class="bi bi-cloud-upload"></i> Deployment Portal</a>
+      <div class="d-flex" id="userSection"></div>
+    </div>
+  </nav>
+
+  <div class="container" id="mainApp">
+    <!-- ===================== AUTH SECTION ===================== -->
+    <div id="authSection">
+      <div class="login-container card shadow">
+        <div class="card-body">
+          <h5 class="card-title text-center mb-4" id="authTitle">Login</h5>
+
+          <div id="authAlertHost" class="mb-2"></div>
+
+          <div class="mb-3" id="usernameField">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-control" id="usernameInput" autocomplete="username">
+          </div>
+
+          <div class="mb-3" id="emailField" style="display:none;">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="emailInput" autocomplete="email">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" id="passwordInput" autocomplete="current-password">
+          </div>
+
+          <button class="btn btn-primary w-100" id="authButton">Login</button>
+
+          <p class="mt-3 text-center mb-0">
+            <a href="#" id="toggleAuth">Don't have an account? Register</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <div id="dashboardSection" class="hidden">
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
+        <h3 class="mb-0"><i class="bi bi-boxes"></i> Your Applications</h3>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createAppModal">
+          <i class="bi bi-plus-circle"></i> New Application
+        </button>
+      </div>
+
+      <div id="dashboardAlertHost" class="mb-3"></div>
+      <div id="applicationsList" class="row row-cols-1 row-cols-md-3 g-4"></div>
+    </div>
+
+    <!-- ===================== APP DETAIL ===================== -->
+    <div id="appDetailSection" class="hidden">
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <button class="btn btn-outline-secondary" id="backToApps">
+          <i class="bi bi-arrow-left"></i> Back to Apps
+        </button>
+        <div class="text-muted small" id="detailSubtitle"></div>
+      </div>
+
+      <div id="detailAlertHost" class="mb-3"></div>
+      <div id="appDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- ===================== MODALS ===================== -->
+
+  <div class="modal fade" id="createAppModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Create Application</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" id="appNameInput" autocomplete="off">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="appDescInput" rows="2" autocomplete="off"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Repository URL <span class="text-muted">(optional)</span></label>
+            <input type="url" class="form-control" id="appRepoUrlInput" placeholder="https://github.com/org/repo" autocomplete="off">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="createAppBtn">Create</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="addVersionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Register Version</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Version Tag</label>
+            <input type="text" class="form-control" id="versionTagInput" placeholder="e.g. v1.0.0" autocomplete="off">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Image Name</label>
+            <input type="text" class="form-control" id="imageNameInput" placeholder="nginx:alpine" autocomplete="off">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="addVersionBtn">Register</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const API_BASE = '/api/v1';
+
+    let currentToken = localStorage.getItem('jwt_token');
+    let currentUser = null;
+    let currentAppId = null;
+
+    let deploymentsPollTimer = null;
+
+    // ===================== UI Helpers =====================
+    const escapeHtml = (str) => {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '<')
+        .replaceAll('>', '>')
+        .replaceAll('"', '"')
+        .replaceAll("'", '&#039;');
+    };
+
+    const showAlert = (hostEl, { type = 'danger', message = '' } = {}) => {
+      hostEl.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          <div>${escapeHtml(message)}</div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+    };
+
+    const clearAlert = (hostEl) => { hostEl.innerHTML = ''; };
+
+    const setVisible = (id, visible) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('hidden', !visible);
+    };
+
+    // ===================== Auth =====================
+    const stopDeploymentsPolling = () => {
+      if (deploymentsPollTimer) {
+        clearInterval(deploymentsPollTimer);
+        deploymentsPollTimer = null;
+      }
+    };
+
+    const logout = () => {
+      currentToken = null;
+      currentUser = null;
+      localStorage.removeItem('jwt_token');
+
+      stopDeploymentsPolling();
+      setVisible('dashboardSection', false);
+      setVisible('appDetailSection', false);
+      setVisible('authSection', true);
+
+      document.getElementById('userSection').innerHTML = '';
+    };
+
+    const updateUserNavbar = () => {
+      const host = document.getElementById('userSection');
+      const username = currentUser?.username ? escapeHtml(currentUser.username) : 'User';
+      host.innerHTML = `
+        <span class="navbar-text text-light me-2">
+          <i class="bi bi-person-circle"></i> ${username}
+        </span>
+        <button class="btn btn-outline-light btn-sm" id="logoutBtn">Logout</button>
+      `;
+      document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    };
+
+    const api = async (url, method = 'GET', body = null) => {
+      const headers = { 'Content-Type': 'application/json' };
+      if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
+
+      const res = await fetch(`${API_BASE}${url}`, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : null,
+      });
+
+      if (res.status === 401) {
+        logout();
+        throw new Error('Session expired. Please log in again.');
+      }
+
+      const isJson = (res.headers.get('content-type') || '').includes('application/json');
+      const payload = isJson ? await res.json().catch(() => null) : null;
+
+      if (!res.ok) {
+        const detail = payload?.detail || payload?.message || `Request failed (${res.status})`;
+        throw new Error(detail);
+      }
+
+      return payload;
+    };
+
+    // ===================== Auth UI =====================
+    const authAlertHost = document.getElementById('authAlertHost');
+    let isLoginMode = true;
+
+    document.getElementById('toggleAuth').addEventListener('click', (e) => {
+      e.preventDefault();
+      isLoginMode = !isLoginMode;
+
+      document.getElementById('authTitle').textContent = isLoginMode ? 'Login' : 'Register';
+      document.getElementById('authButton').textContent = isLoginMode ? 'Login' : 'Register';
+      document.getElementById('toggleAuth').textContent = isLoginMode
+        ? "Don't have an account? Register"
+        : "Already have an account? Login";
+      document.getElementById('emailField').style.display = isLoginMode ? 'none' : 'block';
+    });
+
+    document.getElementById('authButton').addEventListener('click', async () => {
+      clearAlert(authAlertHost);
+
+      const username = document.getElementById('usernameInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
+      const email = document.getElementById('emailInput').value.trim();
+
+      if (!username || !password) {
+        showAlert(authAlertHost, { type: 'warning', message: 'Username and password are required.' });
+        return;
+      }
+
+      try {
+        if (isLoginMode) {
+          const data = await api('/auth/login', 'POST', { login: username, password });
+          currentToken = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem('jwt_token', currentToken);
+          updateUserNavbar();
+          await showDashboard();
+        } else {
+          if (!email) {
+            showAlert(authAlertHost, { type: 'warning', message: 'Email is required for registration.' });
+            return;
+          }
+
+          await api('/auth/register', 'POST', { username, email, password });
+
+          // Auto-login after registration
+          const data = await api('/auth/login', 'POST', { login: username, password });
+          currentToken = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem('jwt_token', currentToken);
+          updateUserNavbar();
+          await showDashboard();
+        }
+      } catch (err) {
+        showAlert(authAlertHost, { type: 'danger', message: err.message || 'Authentication failed.' });
+      }
+    });
+
+    (async () => {
+      if (!currentToken) return;
+      try {
+        await api('/applications/');
+        currentUser = { username: 'User' };
+        updateUserNavbar();
+        await showDashboard();
+      } catch {
+        logout();
+      }
+    })();
+
+    // ===================== Dashboard =====================
+    const dashboardAlertHost = document.getElementById('dashboardAlertHost');
+
+    const loadApplications = async () => {
+      const container = document.getElementById('applicationsList');
+      clearAlert(dashboardAlertHost);
+      container.innerHTML = '';
+
+      try {
+        const apps = await api('/applications/');
+
+        if (!apps || apps.length === 0) {
+          container.innerHTML = `
+            <div class="col-12">
+              <div class="alert alert-info">No applications yet. Create one to start deploying.</div>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = apps.map(app => `
+          <div class="col">
+            <div class="card app-card h-100" data-app-id="${app.id}" role="button" tabindex="0">
+              <div class="card-body">
+                <h5 class="card-title">${escapeHtml(app.name)}</h5>
+                <p class="card-text text-muted small">${escapeHtml(app.description || 'No description')}</p>
+              </div>
+              <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                <small class="text-muted">Created: ${escapeHtml(new Date(app.created_at).toLocaleDateString())}</small>
+                <i class="bi bi-chevron-right"></i>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('[data-app-id]').forEach(el => {
+          const appId = el.getAttribute('data-app-id');
+          const handler = () => viewApp(appId);
+          el.addEventListener('click', handler);
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') handler();
+          });
+        });
+      } catch (err) {
+        showAlert(dashboardAlertHost, { type: 'danger', message: err.message || 'Failed to load applications.' });
+      }
+    };
+
+    const showDashboard = async () => {
+      setVisible('authSection', false);
+      setVisible('appDetailSection', false);
+      setVisible('dashboardSection', true);
+      stopDeploymentsPolling();
+      await loadApplications();
+    };
+
+    document.getElementById('createAppBtn').addEventListener('click', async () => {
+      const name = document.getElementById('appNameInput').value.trim();
+      const desc = document.getElementById('appDescInput').value.trim();
+      const repoUrl = document.getElementById('appRepoUrlInput').value.trim();
+
+      if (!name) {
+        showAlert(dashboardAlertHost, { type: 'warning', message: 'Name is required.' });
+        return;
+      }
+
+      const payload = {
+        name,
+        description: desc || null,
+        repository_url: repoUrl || null,
+      };
+
+      try {
+        await api('/applications/', 'POST', payload);
+
+        document.getElementById('appNameInput').value = '';
+        document.getElementById('appDescInput').value = '';
+        document.getElementById('appRepoUrlInput').value = '';
+
+        bootstrap.Modal.getInstance(document.getElementById('createAppModal')).hide();
+        await loadApplications();
+      } catch (err) {
+        showAlert(dashboardAlertHost, { type: 'danger', message: err.message || 'Failed to create application.' });
+      }
+    });
+
+    // ===================== App Detail =====================
+    const detailAlertHost = document.getElementById('detailAlertHost');
+    const detailSubtitleEl = document.getElementById('detailSubtitle');
+
+    const statusToBadge = (status) => {
+      switch (status) {
+        case 'success': return 'success';
+        case 'failed': return 'danger';
+        case 'in_progress': return 'warning';
+        case 'pending': return 'secondary';
+        case 'rolled_back': return 'dark';
+        default: return 'secondary';
+      }
+    };
+
+    const fetchAndRenderAppDetail = async ({ refreshDeploymentsOnly = false } = {}) => {
+      if (!currentAppId) return;
+
+      clearAlert(detailAlertHost);
+      const content = document.getElementById('appDetailContent');
+
+      try {
+        const [app, versions, deployments] = refreshDeploymentsOnly
+          ? [null, null, await api(`/applications/${currentAppId}/deployments/?skip=0&limit=50&cb=${Date.now()}`)]
+          : await Promise.all([
+              api(`/applications/${currentAppId}`),
+              api(`/applications/${currentAppId}/versions`),
+              api(`/applications/${currentAppId}/deployments/?skip=0&limit=50&cb=${Date.now()}`)
+            ]);
+
+        if (!refreshDeploymentsOnly) {
+          detailSubtitleEl.textContent = '';
+          content.innerHTML = `
+            <h4>${escapeHtml(app.name)}</h4>
+            <p class="text-muted">${escapeHtml(app.description || '')}</p>
+            <hr>
+
+            <div class="row">
+              <div class="col-12 col-md-6 mb-3 mb-md-0">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5><i class="bi bi-tag"></i> Versions</h5>
+                  <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addVersionModal">
+                    <i class="bi bi-plus"></i> Register Version
+                  </button>
+                </div>
+
+                <ul class="list-group" id="versionsList"></ul>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <h5><i class="bi bi-clock-history"></i> Deployments</h5>
+                <div class="list-group" id="deploymentsList"></div>
+              </div>
+            </div>
+          `;
+
+          const versionsList = document.getElementById('versionsList');
+          versionsList.innerHTML = (versions && versions.length)
+            ? versions.map(v => `
+                <li class="list-group-item d-flex justify-content-between align-items-start gap-2">
+                  <div>
+                    <div class="fw-semibold">${escapeHtml(v.version_tag)}</div>
+                    <div class="text-muted small">${escapeHtml(v.image_name)}</div>
+                  </div>
+                  <button class="btn btn-outline-primary btn-sm deploy-btn" data-version-id="${v.id}">Deploy</button>
+                </li>
+              `).join('')
+            : '<li class="list-group-item text-muted">No versions registered.</li>';
+
+          versionsList.querySelectorAll('.deploy-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const versionId = btn.getAttribute('data-version-id');
+              try {
+                await api(`/applications/${currentAppId}/deployments/`, 'POST', { version_id: versionId });
+                showAlert(detailAlertHost, { type: 'success', message: 'Deployment triggered successfully.' });
+                await fetchAndRenderAppDetail();
+              } catch (err) {
+                showAlert(detailAlertHost, { type: 'danger', message: err.message || 'Failed to trigger deployment.' });
+              }
+            });
+          });
+        }
+
+        const deploymentsList = document.getElementById('deploymentsList');
+        if (!deploymentsList) return;
+
+        const depArr = deployments || [];
+        depArr.sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime());
+
+        deploymentsList.innerHTML = depArr.length
+          ? depArr.map(d => {
+              const badge = statusToBadge(d.status);
+              const showRollback = d.status === 'success' || d.status === 'failed';
+              const started = d.started_at ? new Date(d.started_at).toLocaleString() : '—';
+
+              return `
+                <div class="list-group-item">
+                  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge bg-${badge} deployment-status">${escapeHtml(d.status)}</span>
+                      <span class="text-muted small">Started: ${escapeHtml(started)}</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button class="btn btn-sm btn-outline-secondary view-logs-btn" data-deploy-id="${d.id}" type="button">Logs</button>
+                      ${showRollback ? `<button class="btn btn-sm btn-outline-warning rollback-btn" data-deploy-id="${d.id}" type="button">Rollback</button>` : ''}
+                    </div>
+                  </div>
+
+                  <div class="collapse mt-2" id="logsCollapse-${d.id}">
+                    <div class="card card-body p-2">
+                      <div class="small">
+                        <div><span class="text-muted">Status:</span> ${escapeHtml(d.status)}</div>
+                        <div><span class="text-muted">Started:</span> ${escapeHtml(d.started_at || '—')}</div>
+                        <div><span class="text-muted">Finished:</span> ${escapeHtml(d.finished_at || 'N/A')}</div>
+                        <div><span class="text-muted">Previous deployment ID:</span> ${escapeHtml(d.previous_deployment_id || 'None')}</div>
+                        <div><span class="text-muted">Rollback of deployment ID:</span> ${escapeHtml(d.rollback_of_deployment_id || 'None')}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')
+          : '<div class="text-muted small">No deployments yet.</div>';
+
+        deploymentsList.querySelectorAll('.view-logs-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const deployId = btn.getAttribute('data-deploy-id');
+            const collapseEl = document.getElementById(`logsCollapse-${deployId}`);
+            const collapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
+            collapseEl.classList.contains('show') ? collapse.hide() : collapse.show();
+          });
+        });
+
+        deploymentsList.querySelectorAll('.rollback-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const deployId = btn.getAttribute('data-deploy-id');
+            if (!confirm(`Rollback deployment ${deployId}?`)) return;
+            try {
+              await api(`/applications/${currentAppId}/deployments/${deployId}/rollback`, 'POST');
+              showAlert(detailAlertHost, { type: 'success', message: 'Rollback triggered successfully.' });
+              await fetchAndRenderAppDetail();
+            } catch (err) {
+              showAlert(detailAlertHost, { type: 'danger', message: err.message || 'Rollback failed.' });
+            }
+          });
+        });
+      } catch (err) {
+        showAlert(detailAlertHost, { type: 'danger', message: err.message || 'Failed to load application details.' });
+      }
+    };
+
+    const viewApp = async (appId) => {
+      currentAppId = appId;
+      setVisible('dashboardSection', false);
+      setVisible('authSection', false);
+      setVisible('appDetailSection', true);
+
+      await fetchAndRenderAppDetail();
+
+      stopDeploymentsPolling();
+      deploymentsPollTimer = setInterval(async () => {
+        await fetchAndRenderAppDetail({ refreshDeploymentsOnly: true });
+      }, 5000);
+    };
+
+    window.viewApp = viewApp;
+
+    document.getElementById('backToApps').addEventListener('click', () => {
+      stopDeploymentsPolling();
+      currentAppId = null;
+      setVisible('appDetailSection', false);
+      setVisible('dashboardSection', true);
+      loadApplications();
+    });
+
+    document.getElementById('brandLink').addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (currentToken) await showDashboard();
+    });
+
+    document.getElementById('addVersionBtn').addEventListener('click', async () => {
+      clearAlert(detailAlertHost);
+
+      const tag = document.getElementById('versionTagInput').value.trim();
+      const image = document.getElementById('imageNameInput').value.trim();
+
+      if (!tag || !image) {
+        showAlert(detailAlertHost, { type: 'warning', message: 'Version tag and image name are required.' });
+        return;
+      }
+
+      try {
+        await api(`/applications/${currentAppId}/versions`, 'POST', { version_tag: tag, image_name: image });
+
+        document.getElementById('versionTagInput').value = '';
+        document.getElementById('imageNameInput').value = '';
+
+        bootstrap.Modal.getInstance(document.getElementById('addVersionModal')).hide();
+        await fetchAndRenderAppDetail();
+      } catch (err) {
+        showAlert(detailAlertHost, { type: 'danger', message: err.message || 'Failed to register version.' });
+      }
+    });
+  </script>
+</body>
+</html>
+
