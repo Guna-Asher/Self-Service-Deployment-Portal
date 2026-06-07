@@ -256,11 +256,11 @@ The result: **faster, safer, auditable deployments** without giving everyone SSH
 ### Application Dashboard
 ![Application Dashboard](assets/Application_Landing_Page.png)
 
-### Docker Version Registration
-![Docker Version Registration](assets/Docker_Page.png)
-
 ### Successful Deployment
 ![Deployment Success](assets/Deploy_Success.png)
+
+### Docker Version Registration
+![Docker Version Registration](assets/Docker_Page.png)
 
 ### Rollback Functionality
 ![Rollback Functionality](assets/Rollback_Function.png)
