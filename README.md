@@ -16,6 +16,149 @@
 
 ---
 
+## 🚀 Step-by-step guide
+
+Step-by-step guide to get your Self-Service Deployment Portal up and running – whether you’re starting fresh on a new machine or showing it to someone else.
+
+### 1. Prerequisites
+
+- Docker and Docker Compose v2 installed
+- Git installed
+- (Optional) Python 3.11+ if you want to run outside Docker
+
+### 2. Clone the repository
+
+```bash
+git clone https://github.com/Guna-Asher/Self-Service-Deployment-Portal.git
+cd Self-Service-Deployment-Portal
+```
+
+### 3. Set up environment variables
+
+Create your `.env` file from the example:
+
+```bash
+cp .env.example .env
+```
+
+Important – open `.env` and change:
+
+- `SECRET_KEY` – generate a strong random key with:
+
+```bash
+openssl rand -hex 32
+```
+
+Paste the output as the value of `SECRET_KEY`.
+
+- `DEFAULT_PORT_BINDING` – already set to `8081:80`. Change if port `8081` is already used on your machine.
+
+Leave the other values as they are.
+
+### 4. Start the stack (API + Database)
+
+```bash
+docker compose up -d --build
+```
+
+Wait a few moments for both services to become healthy:
+
+```bash
+docker compose ps
+```
+
+You should see:
+
+- `self-service-deployment-portal-db-1` – status healthy
+- `self-service-deployment-portal-api-1` – status Up
+
+### 5. Run database migrations
+
+```bash
+docker compose exec api alembic upgrade head
+```
+
+You should see output like:
+
+```text
+INFO  [alembic.runtime.migration] Running upgrade -> xxxxxxx, initial
+```
+
+### 6. Open the dashboard
+
+Go to http://localhost:9000 in your browser.
+
+You’ll see the Login / Register page.
+
+### 7. Quick usage walkthrough
+
+#### Register a user
+
+- Click “Don’t have an account? Register”
+- Fill in a username, email, and password (min 8 characters)
+- Click Register – you’ll be logged in automatically
+
+#### Create an application
+
+- Click the green “New Application” button
+- Give it a name (e.g. “My Nginx App”) and description
+- Click Create
+
+#### Register a version
+
+- Click the application card to enter its detail view
+- Under Versions, click Register Version
+- Version Tag: `v1.0`
+- Image Name: `nginx:alpine` (a public image)
+- Click Register
+
+#### Deploy
+
+- Click the Deploy button next to the version
+- The deployment status will appear on the right and update every few seconds
+- Once it shows success, open a terminal and check:
+
+```bash
+docker ps | grep nginx
+curl http://localhost:8081
+```
+
+You should see the nginx welcome page.
+
+#### Rollback (optional)
+
+- Add a second version (e.g. image `httpd:alpine`) and deploy it
+- On the deployment list, click Rollback next to that new deployment
+- The system will automatically revert to the previous version
+- Verify by checking `curl http://localhost:8081` again (should be nginx)
+
+### 8. Stop everything
+
+```bash
+docker compose down
+```
+
+### 9. Optional: view the database logs
+
+If you need to see the deployment logs directly:
+
+```bash
+docker compose exec db psql -U postgres -d deployment_portal -c \
+  "SELECT timestamp, level, message FROM deployment_logs WHERE deployment_id = '<deployment-id>' ORDER BY timestamp;"
+```
+
+Replace `<deployment-id>` with the actual UUID from the dashboard or from a previous database query.
+
+### 10. Deploying to AWS EC2 (summary)
+
+- Launch an EC2 instance (Amazon Linux 2, t2.micro) with ports 22, 9000, 8081 open
+- SSH in and install Docker + Docker Compose
+- Clone the repo, create `.env` (with a strong `SECRET_KEY`), and run `docker compose up -d`
+- Run migrations: `docker compose exec api alembic upgrade head`
+- Access the dashboard at http://<public-ip>:9000
+
+---
+
 ## 📖 Table of Contents
 
 ### 1) Public Overview (Recruiters / Hiring Managers / GitHub Visitors)
@@ -303,7 +446,7 @@ Copy `.env.example` to `.env` and fill in:
 
 1. **Clone and enter the project**
    ```bash
-   git clone https://github.com/Guna-Asher/Self-Service-Deployment-Portal.git
+   git clone <your-repo-url>
    cd deployment-portal
    ```
 
