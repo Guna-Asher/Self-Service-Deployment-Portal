@@ -247,11 +247,11 @@ The result: **faster, safer, auditable deployments** without giving everyone SSH
 ---
 ## 📸 Screenshots
 
-### Landing Page
-![Landing Page](assets/Landing_Page.png)
-
 ### Login Page
 ![Login Page](assets/Login_Page.png)
+
+### Landing Page
+![Landing Page](assets/Landing_Page.png)
 
 ### Application Dashboard
 ![Application Dashboard](assets/Application_Landing_Page.png)
