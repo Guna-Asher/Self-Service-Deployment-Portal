@@ -729,6 +729,29 @@ During development, the project hit several real‑world issues. Here’s the ex
 
 ---
 
+## 🗺 Roadmap 
+
+### Completed 
+
+✅ JWT Authentication 
+✅ Deployment Automation 
+✅ Rollback Support 
+✅ Audit Logs 
+
+### In Progress 
+
+🚧 Health Checks 
+🚧 CI/CD Integration 
+
+### Planned (v2) 
+
+📌 Kubernetes Deployments 
+📌 Prometheus Metrics 
+📌 Grafana Dashboards 
+📌 Webhook Deployments
+
+---
+
 ## 🔮 Future Enhancements
 
 - **GitHub Webhook** – automatically trigger a deployment when a new image is pushed to a registry.
