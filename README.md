@@ -1,6 +1,6 @@
 # Self‑Service Deployment Portal
 
-**A production‑ready internal platform for deploying Dockerized applications through a web interface – no more SSH, no manual `docker run`, no human error.**
+> **A production‑ready internal platform for deploying Dockerized applications through a web interface – no more SSH, no manual `docker run`, no human error.**
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green.svg)](https://fastapi.tiangolo.com)
@@ -10,7 +10,15 @@
 
 ---
 
+## 📌 Project Status
+
+- **Initial README**: includes project documentation (setup + usage) and an engineering/development diary (decisions, debugging history, root-cause analysis, fixes, and lessons learned).
+
+---
+
 ## 📖 Table of Contents
+
+### 1) Public Overview (Recruiters / Hiring Managers / GitHub Visitors)
 
 - [Problem Statement](#-problem-statement)
 - [Solution Overview](#-solution-overview)
@@ -40,7 +48,13 @@
   - [Common Issues & Fixes](#common-issues--fixes)
   - [Detailed Error History & How They Were Solved](#detailed-error-history--how-they-were-solved)
 - [Future Enhancements](#-future-enhancements)
-- [License](#-license)
+
+### 2) Engineering Decisions & Journal
+
+- [Deployment Mechanics – What Happens When You Click Deploy](#-deployment-mechanics--what-happens-when-you-click-deploy)
+  - **Why the Docker CLI instead of the Python SDK?**
+- [Troubleshooting](#-troubleshooting)
+  - **Detailed Error History & How They Were Solved**
 
 ---
 
@@ -59,7 +73,6 @@ docker run -d --name myapp -p 80:80 myapp:v2
 ```
 
 This process is **error-prone**, requires **direct server access**, offers **no deployment history**, and makes **rollback** nearly impossible without manual intervention.
-
 
 ---
 
@@ -177,7 +190,8 @@ deployment-portal/
 │   │   ├── user.py
 │   │   ├── application.py
 │   │   ├── version.py
-│   │   ├── deployment.py
+│   │   └── deployment.py
+│   │
 │   │   └── deployment_log.py
 │   ├── schemas/
 │   │   ├── auth.py
@@ -557,7 +571,4 @@ During development, the project hit several real‑world issues. Here’s the ex
 - **Private registry authentication** – support Docker Hub / AWS ECR credentials.
 - **Role‑based access control** – teams, viewers, editors.
 - **CI/CD integration templates** – pre‑built GitHub Actions workflow that builds, pushes, and calls the deploy API.
-
----
-
 
