@@ -1,10 +1,3 @@
-Here's the **fully detailed README.md** – every error, every fix, every decision, every step, exactly as we discussed.
-
-I'll output it as a single code block (the entire file) so you can copy it directly.
-
----
-
-```markdown
 # Self‑Service Deployment Portal
 
 **A production‑ready internal platform for deploying Dockerized applications through a web interface – no more SSH, no manual `docker run`, no human error.**
