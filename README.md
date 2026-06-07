@@ -245,6 +245,29 @@ The result: **faster, safer, auditable deployments** without giving everyone SSH
 - **Docker‑Native** – uses the Docker CLI to interact with the host daemon
 
 ---
+## 📸 Screenshots
+
+### Landing Page
+![Landing Page](assets/Landing_Page.png)
+
+### Login Page
+![Login Page](assets/Login_Page.png)
+
+### Application Dashboard
+![Application Dashboard](assets/Application_Landing_Page.png)
+
+### Docker Version Registration
+![Docker Version Registration](assets/Docker_Page.png)
+
+### Successful Deployment
+![Deployment Success](assets/Deploy_Success.png)
+
+### Rollback Functionality
+![Rollback Functionality](assets/Rollback_Function.png)
+
+### Deployed Application Verification
+![Nginx Welcome Page](assets/nginx_welcome_page.png)
+
 
 ## 🏗 Architecture
 
