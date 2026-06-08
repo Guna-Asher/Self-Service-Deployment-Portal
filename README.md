@@ -271,6 +271,7 @@ The result: **faster, safer, auditable deployments** without giving everyone SSH
 
 ## 🏗 Architecture
 
+```
 @startuml
 skinparam componentStyle rectangle
 
@@ -315,6 +316,8 @@ fastapi --> db : SQL / Connection
 - The **API container** shares the host’s Docker socket (`/var/run/docker.sock`).
 - All persistent data lives in PostgreSQL.
 - The frontend is served directly from the API container (via `StaticFiles`).
+
+```
 
 ---
 
