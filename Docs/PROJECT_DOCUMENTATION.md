@@ -51,21 +51,31 @@ The goal of this document is to provide transparency into how the system works a
 
 The application consists of four primary components:
 
-```text
-Browser
-   │
-   ▼
-FastAPI Backend
-   │
-   ├── PostgreSQL
-   │
-   └── Docker CLI
-            │
-            ▼
-      Docker Daemon
-            │
-            ▼
-       Containers
+```mermaid
+graph TD
+
+User[Developer]
+
+UI[Web Dashboard]
+
+FastAPI[FastAPI Backend]
+
+PostgreSQL[(PostgreSQL)]
+
+DockerCLI[Docker CLI Wrapper]
+
+DockerDaemon[Docker Daemon]
+
+Containers[Application Containers]
+
+User --> UI
+UI --> FastAPI
+
+FastAPI --> PostgreSQL
+FastAPI --> DockerCLI
+
+DockerCLI --> DockerDaemon
+DockerDaemon --> Containers
 ```
 
 ---
@@ -144,35 +154,42 @@ All container operations are delegated to Docker.
 
 Example: User clicks Deploy.
 
-```text
-User
- │
- ▼
-Frontend
- │
- ▼
-POST /deployments
- │
- ▼
-Create Deployment Record
- │
- ▼
-Status = pending
- │
- ▼
-Start Background Task
- │
- ▼
-Docker Operations
- │
- ▼
-Update Status
- │
- ▼
-Frontend Polling
- │
- ▼
-UI Updated
+```mermaid
+graph TD
+
+A[User Clicks Deploy]
+
+B[POST Deploy API]
+
+C[Create Deployment Record]
+
+D[Status = Pending]
+
+E[Background Task]
+
+F[Pull Docker Image]
+
+G[Stop Existing Container]
+
+H[Remove Existing Container]
+
+I[Run New Container]
+
+J[Verify Container]
+
+K[Status = Success]
+
+A --> B
+B --> C
+C --> D
+D --> E
+
+E --> F
+F --> G
+G --> H
+H --> I
+I --> J
+J --> K
 ```
 
 ---
@@ -713,15 +730,25 @@ rolled_back
 
 State transitions:
 
-```text
-pending
-   │
-   ▼
-in_progress
-   │
-   ├── success
-   │
-   └── failed
+```mermaid
+graph LR
+
+Pending[Pending]
+
+InProgress[In Progress]
+
+Success[Success]
+
+Failed[Failed]
+
+RolledBack[Rolled Back]
+
+Pending --> InProgress
+
+InProgress --> Success
+InProgress --> Failed
+
+Success --> RolledBack
 ```
 
 ---
