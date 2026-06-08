@@ -184,37 +184,37 @@ No manual Docker operations are required after deployment setup.
 
 ## Login Page
 
-![Login Page](assets/login-page.png)
+![Login Page](assets/Login_Page.png)
 
 ---
 
 ## Dashboard
 
-![Dashboard](assets/dashboard.png)
+![Dashboard](assets/Landing_Page.png)
 
 ---
 
 ## Application Management
 
-![Applications](assets/application-dashboard.png)
+![Applications](assets/Application_Landing_Page.png)
 
 ---
 
 ## Successful Deployment
 
-![Deployment Success](assets/deployment-success.png)
+![Deployment Success](assets/Deploy_Success.png)
 
 ---
 
-## Version Registration
+## Docker Verification
 
-![Version Registration](assets/version-registration.png)
+![Version Registration](assets/Docker_Page.png)
 
 ---
 
 ## Rollback Functionality
 
-![Rollback](assets/rollback.png)
+![Rollback](assets/Rollback_Function.png)
 
 ---
 
