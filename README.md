@@ -510,7 +510,7 @@ This README focuses on project overview and quick-start instructions.
 For deeper technical documentation, architecture discussions, deployment internals, troubleshooting history, engineering decisions, and development journal entries, see:
 
 ```text
-PROJECT_DOCUMENTATION.md
+Docs/PROJECT_DOCUMENTATION.md
 ```
 
 Topics covered there include:
