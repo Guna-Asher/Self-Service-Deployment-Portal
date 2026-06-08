@@ -736,22 +736,22 @@ During development, the project hit several real‑world issues. Here’s the ex
 
 ### Completed 
 
-✅ JWT Authentication 
-✅ Deployment Automation 
-✅ Rollback Support 
-✅ Audit Logs 
+- ✅ JWT Authentication 
+- ✅ Deployment Automation 
+- ✅ Rollback Support 
+- ✅ Audit Logs 
 
 ### In Progress 
 
-🚧 Health Checks 
-🚧 CI/CD Integration 
+- 🚧 Health Checks 
+- 🚧 CI/CD Integration 
 
 ### Planned (v2) 
 
-📌 Kubernetes Deployments 
-📌 Prometheus Metrics 
-📌 Grafana Dashboards 
-📌 Webhook Deployments
+- 📌 Kubernetes Deployments 
+- 📌 Prometheus Metrics 
+- 📌 Grafana Dashboards 
+- 📌 Webhook Deployments
 
 ---
 
