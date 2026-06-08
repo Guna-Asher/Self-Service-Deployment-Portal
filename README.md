@@ -227,33 +227,30 @@ No manual Docker operations are required after deployment setup.
 ## System Architecture
 
 ```mermaid
-flowchart TD
+graph TD
 
-    User[Developer / User]
+User[Developer]
 
-    Browser[Web Dashboard]
-    API[FastAPI Backend]
+UI[Web Dashboard]
 
-    DB[(PostgreSQL)]
+FastAPI[FastAPI Backend]
 
-    DockerCLI[Docker CLI Wrapper]
-    DockerDaemon[Docker Daemon]
+PostgreSQL[(PostgreSQL)]
 
-    Container1[Application Container]
-    Container2[Application Container]
-    Container3[Application Container]
+DockerCLI[Docker CLI Wrapper]
 
-    User --> Browser
-    Browser --> API
+DockerDaemon[Docker Daemon]
 
-    API --> DB
-    API --> DockerCLI
+Containers[Application Containers]
 
-    DockerCLI --> DockerDaemon
+User --> UI
+UI --> FastAPI
 
-    DockerDaemon --> Container1
-    DockerDaemon --> Container2
-    DockerDaemon --> Container3
+FastAPI --> PostgreSQL
+FastAPI --> DockerCLI
+
+DockerCLI --> DockerDaemon
+DockerDaemon --> Containers
 ```
 
 ---
