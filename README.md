@@ -220,7 +220,7 @@ No manual Docker operations are required after deployment setup.
 
 ## Deployed Application Verification
 
-![Nginx Verification](assets/nginx-verification.png)
+![Nginx Verification](assets/nginx_welcome_page.png)
 
 ---
 
