@@ -271,38 +271,46 @@ The result: **faster, safer, auditable deployments** without giving everyone SSH
 
 ## 🏗 Architecture
 
-```
-┌─────────────────────────────┐
-│      Browser (localhost)    │
-│      http://localhost:9000   │
-└─────────────┬───────────────┘
-              │
-              ▼
-┌─────────────────────────────┐
-│    FastAPI App (container)  │
-│  ┌───────────────────────┐  │
-│  │  Auth / CRUD / Deploy │  │
-│  └───────────┬───────────┘  │
-│              │               │
-│  ┌───────────▼───────────┐  │
-│  │   Background Tasks    │  │
-│  └───────────┬───────────┘  │
-└──────────────┼──────────────┘
-               │  Unix Socket
-               ▼
-┌─────────────────────────────┐
-│   Docker Daemon (host)      │
-│  ┌───────────────────────┐  │
-│  │ Containers (nginx, …) │  │
-│  └───────────────────────┘  │
-└─────────────────────────────┘
-┌─────────────────────────────┐
-│  PostgreSQL (container)     │
-│  - users, applications,     │
-│    versions, deployments,   │
-│    deployment_logs          │
-└─────────────────────────────┘
-```
+@startuml
+skinparam componentStyle rectangle
+
+node "Local Machine" {
+    
+    component "Browser" as browser <<localhost>> {
+        note right: http://localhost:9000
+    }
+
+    node "Docker Host" {
+        
+        component "FastAPI App" as fastapi <<container>> {
+            component "Auth / CRUD / Deploy" as main_logic
+            component "Background Tasks" as bg_tasks
+            
+            main_logic --> bg_tasks
+        }
+        
+        component "Docker Daemon" as docker_daemon <<host>> {
+            component "Containers (nginx, ...)" as managed_containers
+        }
+        
+        database "PostgreSQL" as db <<container>> {
+            folder "Tables" {
+                [users]
+                [applications]
+                [versions]
+                [deployments]
+                [deployment_logs]
+            }
+        }
+    }
+}
+
+' Relationships
+browser --> fastapi : HTTP (Port 9000)
+bg_tasks --> docker_daemon : Unix Socket
+fastapi --> db : SQL / Connection
+
+@enduml
 
 - The **API container** shares the host’s Docker socket (`/var/run/docker.sock`).
 - All persistent data lives in PostgreSQL.
