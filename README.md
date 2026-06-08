@@ -271,54 +271,46 @@ The result: **faster, safer, auditable deployments** without giving everyone SSH
 
 ## 🏗 Architecture
 
-```
-@startuml
-skinparam componentStyle rectangle
+```mermaid
+graph TD
+    %% Define Styles and Nodes
+    subgraph Localhost [Local Machine]
+        Browser["🌐 Browser<br>(http://localhost:9000)"]
+    end
 
-node "Local Machine" {
-    
-    component "Browser" as browser <<localhost>> {
-        note right: http://localhost:9000
-    }
+    subgraph DockerHost [Docker Host]
+        subgraph FastAPI ["FastAPI App (container)"]
+            Logic["Auth / CRUD / Deploy"]
+            BG["Background Tasks"]
+            Logic --> BG
+        end
 
-    node "Docker Host" {
-        
-        component "FastAPI App" as fastapi <<container>> {
-            component "Auth / CRUD / Deploy" as main_logic
-            component "Background Tasks" as bg_tasks
-            
-            main_logic --> bg_tasks
-        }
-        
-        component "Docker Daemon" as docker_daemon <<host>> {
-            component "Containers (nginx, ...)" as managed_containers
-        }
-        
-        database "PostgreSQL" as db <<container>> {
-            folder "Tables" {
-                [users]
-                [applications]
-                [versions]
-                [deployments]
-                [deployment_logs]
-            }
-        }
-    }
-}
+        subgraph Docker [Docker Daemon]
+            Daemon["Docker Daemon (host)"]
+            Containers["Containers (nginx, ...)"]
+            Daemon --- Containers
+        end
 
-' Relationships
-browser --> fastapi : HTTP (Port 9000)
-bg_tasks --> docker_daemon : Unix Socket
-fastapi --> db : SQL / Connection
+        DB[("PostgreSQL (container)
+            • users
+            • applications
+            • versions
+            • deployments
+            • deployment_logs")]
+    end
 
-@enduml
+    %% Connections
+    Browser -->|HTTP| Logic
+    BG -->|Unix Socket| Daemon
+    Logic -.->|Read/Write| DB
 
-- The **API container** shares the host’s Docker socket (`/var/run/docker.sock`).
-- All persistent data lives in PostgreSQL.
-- The frontend is served directly from the API container (via `StaticFiles`).
+    %% Custom Styling
+    style Browser fill:#f9f,stroke:#333,stroke-width:2px
+    style FastAPI fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style Docker fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style DB fill:#fff3e0,stroke:#f57c00,stroke-width:2px
 
 ```
-
 ---
 
 ## 🗃 Database Schema
