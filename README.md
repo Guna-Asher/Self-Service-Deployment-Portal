@@ -224,34 +224,36 @@ No manual Docker operations are required after deployment setup.
 
 ---
 
-# 🏗 Architecture
+## System Architecture
 
-```text
-┌─────────────────────┐
-│      Browser        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│   FastAPI Backend   │
-└──────┬───────┬──────┘
-       │       │
-       │       │
-       ▼       ▼
+```mermaid
+flowchart TD
 
-┌───────────┐  ┌─────────────────┐
-│PostgreSQL │  │   Docker CLI    │
-└───────────┘  └────────┬────────┘
-                        │
-                        ▼
-               ┌─────────────────┐
-               │ Docker Daemon   │
-               └────────┬────────┘
-                        │
-                        ▼
-               ┌─────────────────┐
-               │   Containers    │
-               └─────────────────┘
+    User[Developer / User]
+
+    Browser[Web Dashboard]
+    API[FastAPI Backend]
+
+    DB[(PostgreSQL)]
+
+    DockerCLI[Docker CLI Wrapper]
+    DockerDaemon[Docker Daemon]
+
+    Container1[Application Container]
+    Container2[Application Container]
+    Container3[Application Container]
+
+    User --> Browser
+    Browser --> API
+
+    API --> DB
+    API --> DockerCLI
+
+    DockerCLI --> DockerDaemon
+
+    DockerDaemon --> Container1
+    DockerDaemon --> Container2
+    DockerDaemon --> Container3
 ```
 
 ---
