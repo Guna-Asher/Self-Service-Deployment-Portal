@@ -7,7 +7,6 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
 ![Docker](https://img.shields.io/badge/Docker-Containerization-2496ED)
-![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ---
 
